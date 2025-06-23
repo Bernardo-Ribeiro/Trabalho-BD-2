@@ -1,0 +1,103 @@
+Roteiro para Apresentação em Vídeo (Versão Humanizada - Máx. 10 min)
+Parte 1: Introdução e Apresentação da Ideia (Aprox. 1 minuto)
+O que falar:
+
+"Oi, professora! Aqui é o [Seu Nome] e vou mostrar o meu projeto final de Banco de Dados 2."
+
+"A ideia foi criar um banco de dados para um Pet Shop, pra ajudar a organizar a bagunça do dia a dia. A gente sabe que é tudo muito corrido, então o objetivo é centralizar as informações mais importantes."
+
+"Então, o sistema controla quem são os clientes, quais pets eles têm, agenda os serviços, tipo banho e tosa, e também ajuda a gerar uns relatórios pra ver como o negócio está indo."
+
+"No fim das contas, a ideia é facilitar a vida de quem trabalha lá, deixando a agenda organizada e o histórico dos bichinhos fácil de achar."
+
+O que mostrar na tela:
+
+Slide inicial com o título do projeto, seu nome e o nome da disciplina.
+
+Parte 2: Modelo do Banco de Dados (Aprox. 1.5 minutos)
+O que falar:
+
+"Pra fazer tudo isso funcionar, eu montei esse modelo de banco aqui."
+
+"Ele tem cinco tabelas principais: Clientes, Pets, Funcionarios, Servicos e a tabela Atendimentos, que é a que conecta tudo."
+
+"(Apontando na tela) Aqui em Clientes ficam os dados dos donos. Em Pets, os dados dos bichinhos, e essa tabela já se liga direto com a de Clientes pra gente saber de quem é cada um."
+
+"Funcionarios e Servicos são basicamente listas, uma com quem trabalha lá e outra com o que o pet shop oferece."
+
+"E Atendimentos é a tabela principal, o coração do sistema. Ela amarra tudo: diz qual pet foi atendido, qual serviço foi feito, quem atendeu e quando. Tudo fica registrado aqui."
+
+"As chaves estrangeiras aqui são super importantes pra manter a ordem, tipo, não deixar agendar um serviço pra um pet que nem existe no cadastro."
+
+O que mostrar na tela:
+
+O diagrama entidade-relacionamento (ERD) do banco de dados. Use o mouse para apontar para as tabelas e os relacionamentos enquanto os descreve.
+
+Parte 3: Apresentação de 5 Funcionalidades (Aprox. 2.5 minutos)
+O que falar:
+
+"Beleza, agora vou mostrar 5 funcionalidades na prática e o SQL que faz a mágica acontecer."
+
+1. Agenda do Dia: "Primeiro, a agenda do dia. A recepcionista roda essa consulta e já vê tudo que tá marcado pra hoje: a hora, o nome do pet, do dono... Mão na roda pra se organizar."
+
+2. Histórico do Pet: "Depois, o histórico de um pet. O veterinário precisa saber o que já foi feito no animal, e essa consulta puxa tudo, desde a primeira vacina."
+
+3. Relatório de Faturamento: "Pra quem gerencia, fiz um relatório de faturamento. É só definir o período e ele soma quanto dinheiro entrou com os serviços."
+
+4. Produtividade do Funcionário: "Na mesma linha, tem esse relatório que mostra o quanto cada funcionário produziu. Dá pra ver quem atendeu mais e quanto cada um gerou de grana."
+
+5. Achar Dono pelo Pet: "E por último, uma coisa bem prática: às vezes o cliente liga e só fala o nome do cachorro. Com essa busca, a gente acha os dados do dono rapidinho."
+
+O que mostrar na tela:
+
+Para cada funcionalidade, mostre rapidamente o código SQL. Execute a consulta e mostre o resultado.
+
+Parte 4: Apresentação de Functions, Procedures e Triggers (Aprox. 4 minutos)
+O que falar:
+
+"Pra deixar o banco mais esperto e automático, eu usei Functions, Procedures e Triggers. Vou mostrar 3 exemplos de cada um."
+
+Functions (Funções):
+
+"As Functions eu usei pra fazer cálculos que se repetem, aí não preciso escrever a mesma lógica toda hora."
+
+1. fn_CalcularIdadePet: "Essa aqui calcula a idade do pet. Em vez de só mostrar a data de nascimento, ela já devolve a idade em anos. Fica mais legível." (Execute um SELECT usando a função).
+
+2. fn_TotalGastoCliente: "Essa calcula o total que um cliente já gastou. É boa pra saber quem são os clientes VIP." (Execute e mostre o resultado).
+
+3. fn_UltimoServicoRealizado: "E essa aqui busca rapidinho qual foi o último serviço que o pet fez. Ajuda a não perguntar pro cliente o que ele já respondeu mil vezes." (Execute e mostre).
+
+Procedures (Procedimentos):
+
+"As Procedures eu usei pra juntar várias ações em um comando só."
+
+1. sp_CadastrarClienteComPet: "Essa procedure é uma mão na roda: com um comando só, ela cadastra o cliente e o primeiro pet dele, já fazendo a ligação certa." (Mostre o código e o CALL, depois um SELECT para provar que funcionou).
+
+2. sp_ReagendarAtendimento: "Essa é mais simples, mas super útil: serve pra reagendar um atendimento, só trocando a data e a hora." (Mostre o CALL e o resultado).
+
+3. sp_RelatorioMensalServicos: "E essa aqui gera um relatório mais detalhado, mostrando quanto cada tipo de serviço faturou no mês." (Execute com CALL).
+
+Triggers (Gatilhos):
+
+"E por fim, os Triggers, que são os 'guardiões' do banco. Eles disparam sozinhos pra garantir que ninguém faça besteira."
+
+1. trg_PadronizaNomePet: "Esse aqui, por exemplo, deixa o nome de todo pet novo em maiúsculas. É só pra manter um padrão." (Faça um INSERT com nome minúsculo e mostre que ele foi salvo em maiúsculo).
+
+2. trg_VerificaDataAgendamento: "Esse trigger é uma trava de segurança. Ele não deixa, de jeito nenhum, alguém agendar um atendimento numa data que já passou. Ele dá uma mensagem de erro na hora." (Tente fazer um INSERT com data antiga e mostre o erro).
+
+3. trg_AuditaPrecoServico: "E esse é um gatilho 'dedo-duro'. Se alguém mudar o preço de um serviço, ele anota numa tabela de log quem foi, qual era o preço antigo e qual é o novo. Ajuda a controlar tudo." (Mostre a tabela de Auditoria, faça um UPDATE no preço e depois mostre o novo registro na auditoria).
+
+Parte 5: Conclusão (Aprox. 1 minuto)
+O que falar:
+
+"Então é isso. O projeto foi basicamente criar um banco de dados funcional pra um Pet Shop."
+
+"Com as consultas, procedures, functions e triggers, o sistema não só guarda as informações, mas também protege os dados, automatiza umas tarefas e ainda gera umas visões legais pra ajudar a tocar o negócio."
+
+"Se fosse pra continuar, daria pra colocar um controle de estoque de produtos, detalhar mais a parte financeira e, claro, criar uma tela bonita pra interagir com o banco."
+
+"É isso, professora. Valeu!"
+
+O que mostrar na tela:
+
+Um slide final de "Obrigado!" ou "Valeu!".

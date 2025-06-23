@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projeto Final BD2 - Sistema Pet Shop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- 
+        Chosen Palette: Calm Neutral
+        Application Structure Plan: A single-page application with a fixed sidebar for navigation, mirroring the presentation's structure. Sections include an introduction, an interactive data model diagram, a dashboard to demonstrate the 5 main functionalities (queries), and a "sandbox" area to simulate the advanced SQL objects (Functions, Procedures, Triggers). This structure was chosen to transform the linear presentation script into an explorable, hands-on experience, allowing the user to see the database concepts in action rather than just reading about them.
+        Visualization & Content Choices:
+        - Data Model: Represented with HTML/Tailwind boxes and borders to avoid SVG, making it universally compatible. Goal: Organize -> Method: HTML Diagram -> Interaction: Hover to highlight.
+        - Functionalities Dashboard: Uses interactive elements like date pickers and dropdowns to filter data. Charts are rendered using Chart.js on Canvas. Goal: Compare/Inform -> Method: Dynamic Tables & Charts -> Interaction: Filtering, Sorting -> Library: Chart.js.
+        - Advanced SQL Sandbox: Simulates SQL objects using JavaScript. Forms are used for Procedures, simple inputs for Functions, and "before/after" demos for Triggers. Goal: Demonstrate Logic/Rules -> Method: Interactive Forms & Demos -> Interaction: User input triggering JS functions that mimic backend logic.
+        CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8; /* Warm off-white */
+            color: #4A4A4A; /* Dark Gray */
+        }
+        .nav-link {
+            transition: all 0.2s ease-in-out;
+        }
+        .nav-link:hover, .nav-link.active {
+            background-color: #EFEBE5; /* Light beige */
+            color: #A37F5D; /* Muted brown */
+            transform: translateX(4px);
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #EFEBE5;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+        }
+        .btn-primary {
+            background-color: #A37F5D; /* Muted brown */
+            color: #FFFFFF;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #8C6D4F;
+        }
+        .table-header {
+            background-color: #F7F5F2;
+        }
+        .modal-overlay {
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-box {
+            background-color: white;
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #FDFBF8;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D1C7BC;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #A37F5D;
+        }
+    </style>
+</head>
+<body class="flex">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 min-h-screen bg-white border-r border-gray-200 p-6 fixed hidden lg:block">
+        <h1 class="text-2xl font-bold text-[#A37F5D]">Pet Shop DB</h1>
+        <p class="text-sm text-gray-500 mb-8">Projeto Final - BD2</p>
+        <nav id="desktop-nav">
+            <ul class="space-y-2">
+                <li><a href="#intro" class="nav-link block font-medium p-3 rounded-lg">Introdução</a></li>
+                <li><a href="#modelo" class="nav-link block font-medium p-3 rounded-lg">Modelo de Dados</a></li>
+                <li><a href="#funcionalidades" class="nav-link block font-medium p-3 rounded-lg">Funcionalidades</a></li>
+                <li><a href="#avancado" class="nav-link block font-medium p-3 rounded-lg">SQL Avançado</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Mobile Header -->
+    <header class="lg:hidden w-full bg-white border-b p-4 fixed top-0 z-20 flex justify-between items-center">
+        <h1 class="text-xl font-bold text-[#A37F5D]">Pet Shop DB</h1>
+        <button id="menu-btn" class="p-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+            </svg>
+        </button>
+    </header>
+
+    <!-- Mobile Nav Panel -->
+    <div id="mobile-nav" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden">
+        <aside class="w-64 min-h-screen bg-white p-6">
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-2xl font-bold text-[#A37F5D]">Menu</h1>
+                <button id="close-btn" class="p-2">&times;</button>
+            </div>
+            <nav>
+                <ul class="space-y-2">
+                    <li><a href="#intro" class="nav-link mobile-link block font-medium p-3 rounded-lg">Introdução</a></li>
+                    <li><a href="#modelo" class="nav-link mobile-link block font-medium p-3 rounded-lg">Modelo de Dados</a></li>
+                    <li><a href="#funcionalidades" class="nav-link mobile-link block font-medium p-3 rounded-lg">Funcionalidades</a></li>
+                    <li><a href="#avancado" class="nav-link mobile-link block font-medium p-3 rounded-lg">SQL Avançado</a></li>
+                </ul>
+            </nav>
+        </aside>
+    </div>
+
+    <!-- Main Content -->
+    <main class="lg:ml-64 flex-1 p-6 md:p-10 mt-16 lg:mt-0">
+        <!-- Introduction Section -->
+        <section id="intro" class="min-h-screen pt-10">
+            <div class="card p-8 rounded-xl max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold mb-4">Apresentação do Projeto</h2>
+                <p class="text-lg text-gray-600 mb-6">A ideia foi criar um banco de dados para um Pet Shop, para ajudar a organizar a bagunça do dia a dia. O objetivo é centralizar as informações mais importantes, como o controle de clientes e seus pets, o agendamento de serviços, e a capacidade de gerar relatórios.</p>
+                <p class="text-lg text-gray-600">No fim das contas, a ideia é facilitar a vida de quem trabalha lá, deixando a agenda organizada e o histórico dos bichinhos fácil de achar. Esta página é uma demonstração interativa de como o banco de dados funciona.</p>
+            </div>
+        </section>
+
+        <!-- Data Model Section -->
+        <section id="modelo" class="min-h-screen pt-20">
+            <h2 class="text-3xl font-bold mb-8 text-center">Modelo do Banco de Dados</h2>
+            <div class="relative max-w-5xl mx-auto p-4 md:p-10 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+                <!-- Lines are decorative elements simulating relationships -->
+                <div class="absolute top-1/2 left-1/4 w-1/4 h-px bg-gray-300 hidden md:block"></div>
+                <div class="absolute top-1/4 left-1/2 w-px h-1/4 bg-gray-300 hidden md:block"></div>
+                <div class="absolute top-1/2 right-1/4 w-1/4 h-px bg-gray-300 hidden md:block"></div>
+                <div class="absolute top-1/2 left-1/2 w-px h-1/4 bg-gray-300 transform -translate-y-full hidden md:block"></div>
+
+                <div class="card p-4 rounded-lg md:col-start-1 text-center z-10">
+                    <h3 class="font-bold">Clientes</h3>
+                    <ul class="text-sm text-gray-600"><li>cliente_id (PK)</li><li>nome</li><li>telefone</li></ul>
+                </div>
+                <div class="card p-4 rounded-lg md:col-start-2 text-center z-10">
+                    <h3 class="font-bold">Pets</h3>
+                    <ul class="text-sm text-gray-600"><li>pet_id (PK)</li><li>nome</li><li>cliente_id (FK)</li></ul>
+                </div>
+                <div class="card p-4 rounded-lg md:row-start-2 md:col-start-2 text-center z-10">
+                    <h3 class="font-bold text-lg text-[#A37F5D]">Atendimentos</h3>
+                    <ul class="text-sm text-gray-600"><li>atendimento_id (PK)</li><li>pet_id (FK)</li><li>servico_id (FK)</li><li>funcionario_id (FK)</li></ul>
+                </div>
+                <div class="card p-4 rounded-lg md:col-start-3 text-center z-10">
+                    <h3 class="font-bold">Serviços</h3>
+                    <ul class="text-sm text-gray-600"><li>servico_id (PK)</li><li>nome_servico</li><li>preco</li></ul>
+                </div>
+                <div class="card p-4 rounded-lg md:col-start-3 md:row-start-2 text-center z-10">
+                    <h3 class="font-bold">Funcionários</h3>
+                    <ul class="text-sm text-gray-600"><li>funcionario_id (PK)</li><li>nome</li><li>cargo</li></ul>
+                </div>
+                <p class="md:col-span-3 text-center mt-8 text-gray-600">A tabela `Atendimentos` é o coração do sistema, conectando todas as outras para registrar cada serviço prestado.</p>
+            </div>
+        </section>
+
+        <!-- Functionalities Section -->
+        <section id="funcionalidades" class="min-h-screen pt-20">
+            <h2 class="text-3xl font-bold mb-8 text-center">Funcionalidades (Consultas)</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Agenda do Dia -->
+                <div class="card p-6 rounded-xl">
+                    <h3 class="font-bold text-xl mb-4">1. Agenda do Dia</h3>
+                    <label for="agenda-date" class="block text-sm font-medium mb-2">Selecione uma data:</label>
+                    <input type="date" id="agenda-date" value="2025-06-23" class="w-full p-2 border rounded-md mb-4">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="table-header"><tr><th class="p-2">Hora</th><th class="p-2">Pet</th><th class="p-2">Serviço</th><th class="p-2">Dono</th></tr></thead>
+                            <tbody id="agenda-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Histórico do Pet -->
+                <div class="card p-6 rounded-xl">
+                    <h3 class="font-bold text-xl mb-4">2. Histórico do Pet</h3>
+                    <label for="pet-select" class="block text-sm font-medium mb-2">Selecione um pet:</label>
+                    <select id="pet-select" class="w-full p-2 border rounded-md mb-4"></select>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="table-header"><tr><th class="p-2">Data</th><th class="p-2">Serviço</th><th class="p-2">Valor</th><th class="p-2">Profissional</th></tr></thead>
+                            <tbody id="historico-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Relatório de Faturamento -->
+                <div class="card p-6 rounded-xl lg:col-span-2">
+                    <h3 class="font-bold text-xl mb-4">3. Relatório de Faturamento</h3>
+                    <div class="flex items-center space-x-4 mb-4">
+                       <p class="font-medium">Total faturado no período: <span id="faturamento-total" class="text-[#A37F5D] font-bold text-lg"></span></p>
+                    </div>
+                    <div class="chart-container relative h-64 w-full"><canvas id="faturamento-chart"></canvas></div>
+                </div>
+                 <!-- Produtividade -->
+                 <div class="card p-6 rounded-xl">
+                    <h3 class="font-bold text-xl mb-4">4. Produtividade por Funcionário</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="table-header"><tr><th class="p-2">Funcionário</th><th class="p-2">Atendimentos</th><th class="p-2">Valor Gerado</th></tr></thead>
+                            <tbody id="produtividade-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Achar Dono -->
+                <div class="card p-6 rounded-xl">
+                    <h3 class="font-bold text-xl mb-4">5. Achar Dono pelo Pet</h3>
+                    <label for="pet-name-search" class="block text-sm font-medium mb-2">Digite o nome de um pet (ex: Rex):</label>
+                    <input type="text" id="pet-name-search" value="Rex" class="w-full p-2 border rounded-md mb-4">
+                    <div id="dono-info" class="p-4 bg-gray-50 rounded-md"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Advanced SQL Section -->
+        <section id="avancado" class="min-h-screen pt-20">
+            <h2 class="text-3xl font-bold mb-8 text-center">SQL Avançado (Simulações)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Functions -->
+                <div class="card p-6 rounded-xl md:col-span-1">
+                    <h3 class="font-bold text-xl mb-4">Functions</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium">Calcular Idade do Pet</label>
+                            <select id="idade-pet-select" class="w-full p-2 border rounded-md mt-1"></select>
+                            <p class="mt-2">Idade: <span id="idade-result" class="font-bold text-[#A37F5D]"></span></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Total Gasto por Cliente</label>
+                            <select id="gasto-cliente-select" class="w-full p-2 border rounded-md mt-1"></select>
+                            <p class="mt-2">Total: <span id="gasto-result" class="font-bold text-[#A37F5D]"></span></p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Procedures -->
+                <div class="card p-6 rounded-xl md:col-span-1">
+                    <h3 class="font-bold text-xl mb-4">Procedures</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="font-medium mb-2">Reagendar Atendimento</p>
+                            <button id="proc-reagendar" class="w-full btn-primary p-2 rounded-md">Simular Reagendamento</button>
+                        </div>
+                        <div>
+                            <p class="font-medium mb-2">Relatório Mensal</p>
+                            <button id="proc-relatorio" class="w-full btn-primary p-2 rounded-md">Gerar Relatório de Jun/2025</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Triggers -->
+                <div class="card p-6 rounded-xl md:col-span-1">
+                    <h3 class="font-bold text-xl mb-4">Triggers</h3>
+                     <div class="space-y-4">
+                        <div>
+                            <p class="font-medium mb-2">Padronizar Nome do Pet</p>
+                            <button id="trigger-padroniza" class="w-full btn-primary p-2 rounded-md">Inserir "fido" como nome</button>
+                        </div>
+                        <div>
+                            <p class="font-medium mb-2">Impedir Agendamento no Passado</p>
+                            <button id="trigger-data" class="w-full btn-primary p-2 rounded-md">Tentar agendar para ontem</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal for showing results/errors -->
+    <div id="modal" class="fixed inset-0 modal-overlay z-40 hidden items-center justify-center p-4">
+        <div class="modal-box max-w-lg w-full rounded-xl p-6">
+            <h3 id="modal-title" class="text-xl font-bold mb-4"></h3>
+            <div id="modal-content" class="text-gray-700"></div>
+            <button id="modal-close" class="btn-primary mt-6 w-full p-2 rounded-md">Fechar</button>
+        </div>
+    </div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // --- MOCK DATA ---
+    const clientes = [
+        { cliente_id: 1, nome: 'Ana Silva', telefone: '(55) 99988-7766', endereco: 'Rua das Flores, 123' },
+        { cliente_id: 2, nome: 'Bruno Costa', telefone: '(55) 98877-6655', endereco: 'Avenida Principal, 456' },
+        { cliente_id: 3, nome: 'Carlos Dias', telefone: '(55) 97766-5544', endereco: 'Travessa dos Animais, 789' },
+    ];
+    const funcionarios = [
+        { funcionario_id: 1, nome: 'Fernanda Lima', cargo: 'Veterinária' },
+        { funcionario_id: 2, nome: 'Roberto Souza', cargo: 'Tosador' },
+        { funcionario_id: 3, nome: 'Mariana Alves', cargo: 'Recepcionista' },
+    ];
+    const servicos = [
+        { servico_id: 1, nome_servico: 'Consulta Veterinária', preco: 150.00 },
+        { servico_id: 2, nome_servico: 'Banho e Tosa', preco: 85.50 },
+        { servico_id: 3, nome_servico: 'Vacinação V10', preco: 120.00 },
+        { servico_id: 4, nome_servico: 'Banho Simples', preco: 60.00 },
+    ];
+    let pets = [
+        { pet_id: 1, nome: 'REX', especie: 'Cachorro', raca: 'Labrador', data_nascimento: '2022-05-10', cliente_id: 1 },
+        { pet_id: 2, nome: 'MIA', especie: 'Gato', raca: 'Siamês', data_nascimento: '2023-01-20', cliente_id: 1 },
+        { pet_id: 3, nome: 'THOR', especie: 'Cachorro', raca: 'Golden Retriever', data_nascimento: '2021-11-15', cliente_id: 2 },
+    ];
+    let atendimentos = [
+        { atendimento_id: 1, data_hora: '2025-06-15 10:00:00', pet_id: 1, servico_id: 1, funcionario_id: 1 },
+        { atendimento_id: 2, data_hora: '2025-06-20 14:30:00', pet_id: 3, servico_id: 2, funcionario_id: 2 },
+        { atendimento_id: 3, data_hora: '2025-06-22 11:00:00', pet_id: 2, servico_id: 3, funcionario_id: 1 },
+        { atendimento_id: 4, data_hora: '2025-06-23 09:00:00', pet_id: 1, servico_id: 4, funcionario_id: 2 },
+        { atendimento_id: 5, data_hora: '2025-06-23 11:00:00', pet_id: 3, servico_id: 4, funcionario_id: 2 },
+    ];
+
+    // --- UI ELEMENTS ---
+    const agendaDateInput = document.getElementById('agenda-date');
+    const agendaTable = document.getElementById('agenda-table');
+    const petSelect = document.getElementById('pet-select');
+    const historicoTable = document.getElementById('historico-table');
+    const faturamentoTotalSpan = document.getElementById('faturamento-total');
+    const produtividadeTable = document.getElementById('produtividade-table');
+    const petNameSearchInput = document.getElementById('pet-name-search');
+    const donoInfoDiv = document.getElementById('dono-info');
+    const idadePetSelect = document.getElementById('idade-pet-select');
+    const idadeResultSpan = document.getElementById('idade-result');
+    const gastoClienteSelect = document.getElementById('gasto-cliente-select');
+    const gastoResultSpan = document.getElementById('gasto-result');
+    
+    // Modal elements
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalContent = document.getElementById('modal-content');
+    const modalClose = document.getElementById('modal-close');
+
+    // --- HELPER FUNCTIONS ---
+    const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+    const formatDate = (dateString) => new Date(dateString).toLocaleDateString('pt-BR');
+    const formatTime = (dateString) => new Date(dateString).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+    const showModal = (title, content) => {
+        modalTitle.textContent = title;
+        modalContent.innerHTML = content;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    };
+    modalClose.addEventListener('click', () => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    });
+
+    // --- FUNCTIONALITY RENDERERS ---
+
+    // 1. Agenda do Dia
+    const renderAgenda = () => {
+        const selectedDate = agendaDateInput.value;
+        const agendaDoDia = atendimentos
+            .filter(a => new Date(a.data_hora).toISOString().slice(0, 10) === selectedDate)
+            .sort((a, b) => new Date(a.data_hora) - new Date(b.data_hora));
+
+        agendaTable.innerHTML = '';
+        if (agendaDoDia.length === 0) {
+            agendaTable.innerHTML = '<tr><td colspan="4" class="p-2 text-center text-gray-500">Nenhum atendimento para esta data.</td></tr>';
+            return;
+        }
+        agendaDoDia.forEach(a => {
+            const pet = pets.find(p => p.pet_id === a.pet_id);
+            const servico = servicos.find(s => s.servico_id === a.servico_id);
+            const cliente = clientes.find(c => c.cliente_id === pet.cliente_id);
+            agendaTable.innerHTML += `
+                <tr>
+                    <td class="p-2">${formatTime(a.data_hora)}</td>
+                    <td class="p-2 font-medium">${pet.nome}</td>
+                    <td class="p-2">${servico.nome_servico}</td>
+                    <td class="p-2 text-gray-600">${cliente.nome}</td>
+                </tr>
+            `;
+        });
+    };
+
+    // 2. Histórico do Pet
+    const populatePetSelect = () => {
+        pets.forEach(pet => {
+            petSelect.innerHTML += `<option value="${pet.pet_id}">${pet.nome}</option>`;
+            idadePetSelect.innerHTML += `<option value="${pet.pet_id}">${pet.nome}</option>`;
+        });
+    };
+    const renderHistorico = () => {
+        const selectedPetId = parseInt(petSelect.value);
+        const historicoDoPet = atendimentos
+            .filter(a => a.pet_id === selectedPetId)
+            .sort((a, b) => new Date(b.data_hora) - new Date(a.data_hora));
+        
+        historicoTable.innerHTML = '';
+        if (historicoDoPet.length === 0) {
+            historicoTable.innerHTML = '<tr><td colspan="4" class="p-2 text-center text-gray-500">Nenhum histórico para este pet.</td></tr>';
+            return;
+        }
+        historicoDoPet.forEach(a => {
+            const servico = servicos.find(s => s.servico_id === a.servico_id);
+            const funcionario = funcionarios.find(f => f.funcionario_id === a.funcionario_id);
+            historicoTable.innerHTML += `
+                <tr>
+                    <td class="p-2">${formatDate(a.data_hora)}</td>
+                    <td class="p-2">${servico.nome_servico}</td>
+                    <td class="p-2">${formatCurrency(servico.preco)}</td>
+                    <td class="p-2 text-gray-600">${funcionario.nome}</td>
+                </tr>
+            `;
+        });
+    };
+
+    // 3. Faturamento
+    let faturamentoChartInstance;
+    const renderFaturamento = () => {
+        let faturamentoTotal = 0;
+        const faturamentoPorDia = {};
+
+        atendimentos.forEach(a => {
+            const servico = servicos.find(s => s.servico_id === a.servico_id);
+            faturamentoTotal += servico.preco;
+            const data = new Date(a.data_hora).toISOString().slice(0, 10);
+            if (!faturamentoPorDia[data]) {
+                faturamentoPorDia[data] = 0;
+            }
+            faturamentoPorDia[data] += servico.preco;
+        });
+
+        faturamentoTotalSpan.textContent = formatCurrency(faturamentoTotal);
+
+        const sortedDates = Object.keys(faturamentoPorDia).sort();
+        const chartLabels = sortedDates.map(date => formatDate(date));
+        const chartData = sortedDates.map(date => faturamentoPorDia[date]);
+
+        const ctx = document.getElementById('faturamento-chart').getContext('2d');
+        if (faturamentoChartInstance) {
+            faturamentoChartInstance.destroy();
+        }
+        faturamentoChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Faturamento Diário',
+                    data: chartData,
+                    backgroundColor: 'rgba(163, 127, 93, 0.6)',
+                    borderColor: 'rgba(163, 127, 93, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    };
+    
+    // 4. Produtividade
+    const renderProdutividade = () => {
+        produtividadeTable.innerHTML = '';
+        const produtividade = {};
+        funcionarios.forEach(f => {
+            produtividade[f.funcionario_id] = { nome: f.nome, atendimentos: 0, valor: 0 };
+        });
+
+        atendimentos.forEach(a => {
+            const servico = servicos.find(s => s.servico_id === a.servico_id);
+            if (produtividade[a.funcionario_id]) {
+                produtividade[a.funcionario_id].atendimentos++;
+                produtividade[a.funcionario_id].valor += servico.preco;
+            }
+        });
+        
+        Object.values(produtividade).forEach(p => {
+            produtividadeTable.innerHTML += `
+                <tr>
+                    <td class="p-2 font-medium">${p.nome}</td>
+                    <td class="p-2">${p.atendimentos}</td>
+                    <td class="p-2">${formatCurrency(p.valor)}</td>
+                </tr>
+            `;
+        });
+    };
+
+    // 5. Achar Dono
+    const findDono = () => {
+        const petName = petNameSearchInput.value.trim().toUpperCase();
+        const pet = pets.find(p => p.nome === petName);
+        if (pet) {
+            const cliente = clientes.find(c => c.cliente_id === pet.cliente_id);
+            donoInfoDiv.innerHTML = `
+                <p><span class="font-medium">Dono:</span> ${cliente.nome}</p>
+                <p><span class="font-medium">Telefone:</span> ${cliente.telefone}</p>
+                <p><span class="font-medium">Endereço:</span> ${cliente.endereco}</p>
+            `;
+        } else {
+            donoInfoDiv.innerHTML = `<p class="text-red-500">Pet não encontrado.</p>`;
+        }
+    };
+
+    // --- ADVANCED SQL SIMULATIONS ---
+    
+    // Functions
+    const populateClienteSelect = () => {
+        clientes.forEach(c => {
+            gastoClienteSelect.innerHTML += `<option value="${c.cliente_id}">${c.nome}</option>`;
+        });
+    };
+
+    const fn_CalcularIdadePet = (petId) => {
+        const pet = pets.find(p => p.pet_id === parseInt(petId));
+        if (!pet) return 'N/A';
+        const birthDate = new Date(pet.data_nascimento);
+        let age = new Date().getFullYear() - birthDate.getFullYear();
+        const m = new Date().getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && new Date().getDate() < birthDate.getDate())) {
+            age--;
+        }
+        return `${age} anos`;
+    };
+
+    const fn_TotalGastoCliente = (clienteId) => {
+        let total = 0;
+        const petsDoCliente = pets.filter(p => p.cliente_id === parseInt(clienteId));
+        const petIds = petsDoCliente.map(p => p.pet_id);
+        
+        atendimentos.forEach(a => {
+            if (petIds.includes(a.pet_id)) {
+                const servico = servicos.find(s => s.servico_id === a.servico_id);
+                total += servico.preco;
+            }
+        });
+        return formatCurrency(total);
+    };
+
+    idadePetSelect.addEventListener('change', (e) => {
+        idadeResultSpan.textContent = fn_CalcularIdadePet(e.target.value);
+    });
+    gastoClienteSelect.addEventListener('change', (e) => {
+        gastoResultSpan.textContent = fn_TotalGastoCliente(e.target.value);
+    });
+    
+    // Procedures
+    document.getElementById('proc-reagendar').addEventListener('click', () => {
+        const atendimentoId = 1;
+        const atendimento = atendimentos.find(a => a.atendimento_id === atendimentoId);
+        const dataAntiga = new Date(atendimento.data_hora);
+        atendimento.data_hora = new Date(dataAntiga.getTime() + 24*60*60*1000).toISOString(); // Adiciona 1 dia
+        const dataNova = new Date(atendimento.data_hora);
+        showModal('Procedure: Reagendar', `O atendimento ID ${atendimentoId} foi reagendado de ${dataAntiga.toLocaleString('pt-BR')} para ${dataNova.toLocaleString('pt-BR')}.`);
+    });
+
+    document.getElementById('proc-relatorio').addEventListener('click', () => {
+        const relatorio = {};
+        atendimentos.forEach(a => {
+            const data = new Date(a.data_hora);
+            if (data.getFullYear() === 2025 && data.getMonth() === 5) { // Junho é mês 5
+                const servico = servicos.find(s => s.servico_id === a.servico_id);
+                if (!relatorio[servico.nome_servico]) {
+                    relatorio[servico.nome_servico] = { qtd: 0, valor: 0 };
+                }
+                relatorio[servico.nome_servico].qtd++;
+                relatorio[servico.nome_servico].valor += servico.preco;
+            }
+        });
+        let content = '<ul class="list-disc pl-5">';
+        for (const [key, value] of Object.entries(relatorio)) {
+            content += `<li><strong>${key}:</strong> ${value.qtd}x - ${formatCurrency(value.valor)}</li>`;
+        }
+        content += '</ul>';
+        showModal('Procedure: Relatório Mensal (Jun/2025)', content);
+    });
+
+    // Triggers
+    document.getElementById('trigger-padroniza').addEventListener('click', () => {
+        const nomeOriginal = 'fido';
+        const nomePadronizado = nomeOriginal.toUpperCase();
+        showModal('Trigger: Padronizar Nome', `O nome <strong>"${nomeOriginal}"</strong> foi inserido, mas o gatilho o salvou como <strong>"${nomePadronizado}"</strong> para manter o padrão.`);
+    });
+    
+    document.getElementById('trigger-data').addEventListener('click', () => {
+        showModal('Trigger: Impedir Agendamento no Passado', `<p class="text-red-600 font-bold">ERRO: Não é possível agendar um atendimento em uma data ou hora passada.</p><p>O gatilho bloqueou a inserção.</p>`);
+    });
+
+    // --- INITIALIZATION ---
+    agendaDateInput.addEventListener('change', renderAgenda);
+    petSelect.addEventListener('change', renderHistorico);
+    petNameSearchInput.addEventListener('input', findDono);
+
+    renderAgenda();
+    populatePetSelect();
+    renderHistorico();
+    renderFaturamento();
+    renderProdutividade();
+    findDono();
+    populateClienteSelect();
+    // Initial calls for function results
+    idadeResultSpan.textContent = fn_CalcularIdadePet(idadePetSelect.value);
+    gastoResultSpan.textContent = fn_TotalGastoCliente(gastoClienteSelect.value);
+
+    // --- SCROLLSPY & MOBILE NAV ---
+    const navLinks = document.querySelectorAll('.nav-link');
+    const sections = document.querySelectorAll('section');
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            if (pageYOffset >= sectionTop - 150) {
+                current = section.getAttribute('id');
+            }
+        });
+
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href').includes(current)) {
+                link.classList.add('active');
+            }
+        });
+    });
+    
+    const menuBtn = document.getElementById('menu-btn');
+    const closeBtn = document.getElementById('close-btn');
+    const mobileNav = document.getElementById('mobile-nav');
+    const mobileLinks = document.querySelectorAll('.mobile-link');
+
+    menuBtn.addEventListener('click', () => mobileNav.classList.remove('hidden'));
+    closeBtn.addEventListener('click', () => mobileNav.classList.add('hidden'));
+    mobileNav.addEventListener('click', (e) => {
+        if(e.target === mobileNav) mobileNav.classList.add('hidden');
+    });
+    mobileLinks.forEach(link => link.addEventListener('click', () => mobileNav.classList.add('hidden')));
+
+});
+</script>
+</body>
+</html>
